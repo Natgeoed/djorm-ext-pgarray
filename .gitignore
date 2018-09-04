@@ -7,3 +7,5 @@ build*
 *.egg*
 
 doc/index.html
+.idea
+
