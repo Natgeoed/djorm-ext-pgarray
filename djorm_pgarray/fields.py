@@ -98,7 +98,27 @@ def _unserialize(value):
         return _cast_to_unicode(value)
 
 
-class ArrayField(six.with_metaclass(models.SubfieldBase, models.Field)):
+
+class Creator(object):
+    """
+    Field descriptor that calls the to_python method on assignment.
+     This matches the Django<=1.9 fields.subclassing.Creator class.
+    See the Django 1.8 release notes where SubFieldBase was deprecated for
+    more: https://docs.djangoproject.com/en/1.10/releases/1.8/#subfieldbase
+    """
+    def __init__(self, field):
+        self.field = field
+
+    def __get__(self, obj, type=None):
+        if obj is None:
+            return self
+        return obj.__dict__[self.field.name]
+    
+    def __set__(self, obj, value):
+        obj.__dict__[self.field.name] = self.field.to_python(value)
+
+
+class ArrayField(models.Field):
     empty_strings_allowed = False
 
     def __init__(self, dbtype="int", type_cast=None, dimension=1, *args, **kwargs):
@@ -119,6 +139,10 @@ class ArrayField(six.with_metaclass(models.SubfieldBase, models.Field)):
         kwargs.setdefault("null", True)
         kwargs.setdefault("default", None)
         super(ArrayField, self).__init__(*args, **kwargs)
+
+    def contribute_to_class(self, cls, name, **kwargs):
+        super(ArrayField, self).contribute_to_class(cls, name, **kwargs)
+        setattr(cls, self.name, Creator(self))
 
     def get_db_prep_lookup(self, lookup_type, value, connection, prepared=False):
         if lookup_type == "contains":
