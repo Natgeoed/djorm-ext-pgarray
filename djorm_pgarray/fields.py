@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 from collections import Iterable
 import json
@@ -37,7 +37,7 @@ class SerializableList(list):
         """
         result = SerializableList([])
         for item in self.__iter__():
-            if not isinstance(item, basestring):
+            if not isinstance(item, str):
                 result.append(item)
             else:
                 result.append(item.replace(old, new))
@@ -50,7 +50,7 @@ class SerializableList(list):
         encoding = encoding or sys.getdefaultencoding()
         result = SerializableList([])
         for item in self.__iter__():
-            if not isinstance(item, basestring):
+            if not isinstance(item, str):
                 result.append(item)
             else:
                 result.append(item.encode(encoding, errors))
@@ -61,7 +61,7 @@ class SerializableList(list):
         encoding = encoding or sys.getdefaultencoding()
         result = SerializableList([])
         for item in self.__iter__():
-            if not isinstance(item, basestring):
+            if not isinstance(item, str):
                 result.append(item)
             else:
                 result.append(item.decode(encoding, errors))
@@ -168,10 +168,10 @@ class ArrayField(models.Field):
         return _cast_to_type(value, self._type_cast)
 
     def get_prep_value(self, value):
-        return value if isinstance(value, (six.string_types, list,)) or not isinstance(value, Iterable) else list(value)
+        return value if isinstance(value, (six.string_types, list)) or not isinstance(value, Iterable) else list(value)
 
     def to_python(self, value):
-        if value is None or value == u"":
+        if value is None or value == "":
             return None
         return _unserialize(value)
 
@@ -290,7 +290,7 @@ class ArrayFormField(forms.Field):
         if delim is not None:
             self.delim = delim
         else:
-            self.delim = u","
+            self.delim = ","
 
         self.strip = strip
         if 'initial' in kwargs and kwargs['initial'] is None:
@@ -320,7 +320,7 @@ class ArrayFormField(forms.Field):
         return super(ArrayFormField, self).prepare_value(value)
 
     def to_python(self, value):
-        if value is None or value == u"":
+        if value is None or value == "":
             return []
         elif isinstance(value, (tuple, list)):
             return value
