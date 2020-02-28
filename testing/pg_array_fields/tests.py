@@ -126,12 +126,12 @@ class ArrayFieldTests(TestCase):
     def test_correct_behavior_with_text_arrays_01(self):
         obj = TextModel.objects.create(field=[[1, 2], [3, 4]])
         obj = TextModel.objects.get(pk=obj.pk)
-        self.assertEqual(obj.field, [[u'1', u'2'], [u'3', u'4']])
+        self.assertEqual(obj.field, [['1', '2'], ['3', '4']])
 
     def test_correct_behavior_with_text_arrays_02(self):
-        obj = MTextModel.objects.create(data=[[u"1", u"2"], [u"3", u"ñ"]])
+        obj = MTextModel.objects.create(data=[["1", "2"], ["3", "ñ"]])
         obj = MTextModel.objects.get(pk=obj.pk)
-        self.assertEqual(obj.data, [[u"1", u"2"], [u"3", u"ñ"]])
+        self.assertEqual(obj.data, [["1", "2"], ["3", "ñ"]])
 
     def test_correct_behavior_with_int_arrays(self):
         obj = IntModel.objects.create(field=[1, 2, 3])
@@ -144,7 +144,7 @@ class ArrayFieldTests(TestCase):
         self.assertEqual(obj.field, [1.2, 2.4, 3])
 
     def test_value_to_string_serializes_correctly(self):
-        obj = MTextModel.objects.create(data=[[u"1", u"2"], [u"3", u"ñ"]])
+        obj = MTextModel.objects.create(data=[["1", "2"], ["3", "ñ"]])
         obj_int = IntModel.objects.create(field=[1, 2, 3])
 
         serialized_obj = serialize('json', MTextModel.objects.filter(pk=obj.pk))
@@ -161,11 +161,11 @@ class ArrayFieldTests(TestCase):
         obj.save()
         obj_int.save()
 
-        self.assertEqual(obj.data, [[u"1", u"2"], [u"3", u"ñ"]])
+        self.assertEqual(obj.data, [["1", "2"], ["3", "ñ"]])
         self.assertEqual(obj_int.field, [1, 2, 3])
 
     def test_to_python_serializes_xml_correctly(self):
-        obj = MTextModel.objects.create(data=[[u"1", u"2"], [u"3", u"ñ"]])
+        obj = MTextModel.objects.create(data=[["1", "2"], ["3", "ñ"]])
         obj_int = IntModel.objects.create(field=[1, 2, 3])
 
         serialized_obj = serialize('xml', MTextModel.objects.filter(pk=obj.pk))
@@ -180,7 +180,7 @@ class ArrayFieldTests(TestCase):
         obj.save()
         obj_int.save()
 
-        self.assertEqual(obj.data, [[u"1", u"2"], [u"3", u"ñ"]])
+        self.assertEqual(obj.data, [["1", "2"], ["3", "ñ"]])
         self.assertEqual(obj_int.field, [1, 2, 3])
 
     def test_can_override_formfield(self):
@@ -327,8 +327,8 @@ if django.VERSION[:2] >= (1, 7):
             self.assertEqual(qs.count(), 1)
 
         def test_contains_unicode(self):
-            obj = TextModel.objects.create(field=[u"Fóö", u"Пример", u"test"])
-            qs = TextModel.objects.filter(field__contains=[u"Пример"])
+            obj = TextModel.objects.create(field=["Fóö", "Пример", "test"])
+            qs = TextModel.objects.filter(field__contains=["Пример"])
             self.assertEqual(qs.count(), 1)
 
         def test_deconstruct_defaults(self):
@@ -429,11 +429,11 @@ class ArrayFormFieldTests(TestCase):
     def test_regular_forms(self):
         form = IntArrayForm()
         self.assertFalse(form.is_valid())
-        form = IntArrayForm({'field': u'1,2'})
+        form = IntArrayForm({'field': '1,2'})
         self.assertTrue(form.is_valid())
 
     def test_empty_value(self):
-        form = IntArrayForm({'field': u''})
+        form = IntArrayForm({'field': ''})
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data['field'], [])
 
@@ -450,13 +450,13 @@ class ArrayFormFieldTests(TestCase):
 
     def test_unicode_data(self):
         field = ArrayFormField()
-        result = field.prepare_value([u"Клиент", u"こんにちは"])
-        self.assertEqual(result, u"Клиент,こんにちは")
+        result = field.prepare_value(["Клиент", "こんにちは"])
+        self.assertEqual(result, "Клиент,こんにちは")
 
     def test_invalid_error(self):
         form = IntArrayForm({'field': 1})
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors['field'],
-            [u'Enter a list of values, joined by commas.  E.g. "a,b,c".']
+            ['Enter a list of values, joined by commas.  E.g. "a,b,c".']
         )
